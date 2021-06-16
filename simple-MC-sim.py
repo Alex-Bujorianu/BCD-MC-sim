@@ -10,9 +10,19 @@ import numpy as np
 import random
 import matplotlib.pyplot as plt
 from statistics import mean, quantiles
+import scipy.stats
 
 # A simple Monte Carlo simulation representing a risk-neutral investor.
 # i.e. the university will always chose to code more features
+
+def count_if(array, condition):
+    "Counts how many elements in the given array meet the condition"
+    count = 0
+    for i in range(len(array)):
+        magic = 'array[i]' + condition
+        if eval(magic):
+            count+=1
+    return count
 
 def NPV(t, i, c, d):
     "This function calculates the Net Present Value to 2 decimal places."
@@ -27,9 +37,12 @@ iterations = 20000
 
 for i in range(1, iterations):
     #always code more features in second decision moment.
-    initial_investment = np.random.gamma(15.28, 2557, 1) #mean 39,100, σ = 10,000
+    initial_investment = np.random.gamma(15.28, 2557, 1)[0] #mean 39,100, σ = 10,000
     discount_rate = np.random.uniform(0.0, 5.0) 
-    time_period = int(np.random.gamma(25, 3/5, 1)) #gamma dist with mean = 15, σ = 3
+    #The Weibull distribution has 2 parameters, but scipy uses just one.
+    #The 'c' variable is the shape (5, not too extreme)
+    #and you multiply by λ to obtain the mean (the function returns values 0–1)
+    time_period = int(scipy.stats.weibull_min.rvs(5, size=1)[0]*15)
     cashflow = 0
     event_1 = random.random()
     event_2 = random.random()
@@ -53,10 +66,13 @@ average = mean(results)
 first_quartile = quantiles(results, n=5)[0]
 print("The average is ", average, "The first quartile is ", first_quartile,
       "The lowest value is ", min(results), "the highest value is ", max(results))
+losses = count_if(results, '<0')
+print("The number of loss-making simulations is ", 
+      losses, "which as a fraction is", losses/len(results))
 lineStart = 0
 lineEnd = iterations
-plt.scatter(range(0, len(results), 1), results, alpha=0.8)
-plt.plot([lineStart, lineEnd], [average, average], 'k-', color = 'g')
+plt.scatter(range(0, len(results), 1), results, alpha=0.6)
+plt.plot([lineStart, lineEnd], [average, average], 'k-', color = 'r')
 plt.plot([lineStart, lineEnd], [first_quartile, first_quartile], 'k-', color = 'r')
 plt.xlabel("Simulation run number")
 plt.ylabel("NPV in €")
