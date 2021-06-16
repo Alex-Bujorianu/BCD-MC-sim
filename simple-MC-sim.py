@@ -64,11 +64,15 @@ for i in range(1, iterations):
 
 average = mean(results)
 first_quartile = quantiles(results, n=5)[0]
-print("The average is ", average, "The first quartile is ", first_quartile,
+print("The average is ", average, "The standard deviation is", stdev(results),
+      "The first quartile is ", first_quartile,
       "The lowest value is ", min(results), "the highest value is ", max(results))
 losses = count_if(results, '<0')
 print("The number of loss-making simulations is ", 
       losses, "which as a fraction is", losses/len(results))
+# f = open("results.txt", "a")
+# f.write(str(results))
+# f.close()
 lineStart = 0
 lineEnd = iterations
 plt.scatter(range(0, len(results), 1), results, alpha=0.6)
@@ -78,3 +82,17 @@ plt.xlabel("Simulation run number")
 plt.ylabel("NPV in €")
 plt.tight_layout() #Needed to avoid truncating the graph
 plt.savefig("Monte-Carlo-results.png", dpi=600)
+
+#Make a histogram
+n, bins, patches = plt.hist(x=results, bins='auto', color='#0504aa',
+                            alpha=0.7, rwidth=0.85)
+plt.grid(axis='y', alpha=0.75)
+plt.xlabel('NPV(€)')
+plt.ylabel('Frequency')
+plt.title('Histogram of Simulation Results')
+plt.text(200000, 200, 'μ = 85573, σ=54850')
+maxfreq = n.max()
+# Set a clean upper y-axis limit.
+plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
+plt.tight_layout()
+plt.savefig("Histogram.png", dpi=600)
