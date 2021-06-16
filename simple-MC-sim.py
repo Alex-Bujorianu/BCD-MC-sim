@@ -9,7 +9,7 @@ Created on Mon Jun 14 14:47:52 2021
 import numpy as np
 import random
 import matplotlib.pyplot as plt
-from statistics import mean, quantiles
+from statistics import mean, quantiles, stdev
 import scipy.stats
 
 # A simple Monte Carlo simulation representing a risk-neutral investor.
@@ -40,9 +40,9 @@ for i in range(1, iterations):
     initial_investment = np.random.gamma(15.28, 2557, 1)[0] #mean 39,100, σ = 10,000
     discount_rate = np.random.uniform(0.0, 5.0) 
     #The Weibull distribution has 2 parameters, but scipy uses just one.
-    #The 'c' variable is the shape (5, not too extreme)
-    #and you multiply by λ to obtain the mean (the function returns values 0–1)
-    time_period = int(scipy.stats.weibull_min.rvs(5, size=1)[0]*15)
+    #The 'c' variable is the shape (5, not too extreme) and λ = 1 (implicit)
+    #Multiply by 16.34 to obtain mean = 15. 15/Γ(1+1/5) = 16.34
+    time_period = int(scipy.stats.weibull_min.rvs(5, size=1)[0]*16.34)
     cashflow = 0
     event_1 = random.random()
     event_2 = random.random()
@@ -82,6 +82,7 @@ plt.xlabel("Simulation run number")
 plt.ylabel("NPV in €")
 plt.tight_layout() #Needed to avoid truncating the graph
 plt.savefig("Monte-Carlo-results.png", dpi=600)
+plt.close() #don't forget this line
 
 #Make a histogram
 n, bins, patches = plt.hist(x=results, bins='auto', color='#0504aa',
@@ -90,7 +91,7 @@ plt.grid(axis='y', alpha=0.75)
 plt.xlabel('NPV(€)')
 plt.ylabel('Frequency')
 plt.title('Histogram of Simulation Results')
-plt.text(200000, 200, 'μ = 85573, σ=54850')
+plt.text(200000, 200, 'μ =' + str(round(mean(results), 2)) +' ' + 'σ=' + str(round(stdev(results), 2)))
 maxfreq = n.max()
 # Set a clean upper y-axis limit.
 plt.ylim(ymax=np.ceil(maxfreq / 10) * 10 if maxfreq % 10 else maxfreq + 10)
